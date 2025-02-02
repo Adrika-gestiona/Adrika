@@ -47,24 +47,30 @@ if st.button("📌 Calcular Ratio"):
     
     # Mostrar resultados
     st.subheader("📊 Resultados del Cálculo de Ratios")
-    st.markdown(f"<p style='font-size:18px;'>🔹 <b>Atención Directa</b> → Total EQ: <b>{total_eq_directa:.2f}</b> | Ratio: <b>{ratio_directa:.2f}</b> por cada 100 residentes</p>", unsafe_allow_html=True)
-    st.markdown(f"<p style='font-size:18px;'>🔹 <b>Atención No Directa</b> → Total EQ: <b>{total_eq_no_directa:.2f}</b> | Ratio: <b>{ratio_no_directa:.2f}</b> por cada 100 residentes</p>", unsafe_allow_html=True)
+    ratio_directa_color = "red" if ratio_directa / 100 < 0.47 else "green"
+    ratio_no_directa_color = "red" if ratio_no_directa / 100 < 0.15 else "green"
+    
+    st.markdown(f"<p style='font-size:18px; color:{ratio_directa_color};'>🔹 <b>Atención Directa</b> → Total EQ: <b>{total_eq_directa:.2f}</b> | Ratio: <b>{ratio_directa:.2f}</b> por cada 100 residentes</p>", unsafe_allow_html=True)
+    st.markdown(f"<p style='font-size:18px; color:{ratio_no_directa_color};'>🔹 <b>Atención No Directa</b> → Total EQ: <b>{total_eq_no_directa:.2f}</b> | Ratio: <b>{ratio_no_directa:.2f}</b> por cada 100 residentes</p>", unsafe_allow_html=True)
     
     # Verificación de cumplimiento
     cumple_directa = ratio_directa / 100 >= 0.47
     cumple_no_directa = ratio_no_directa / 100 >= 0.15
     cumple_gerocultores = (calcular_equivalentes_jornada_completa(datos_directas.get("Gerocultor", 0)) / ocupacion) >= 0.33
+    gerocultores_color = "red" if not cumple_gerocultores else "green"
     
     st.subheader("✅ Verificación de cumplimiento con la CAM")
-    st.markdown(f"<p style='font-size:18px;'>- <b>Atención Directa</b>: {'✅ CUMPLE' if cumple_directa else '❌ NO CUMPLE'} (Mínimo 0,47). Ratio: <b>{ratio_directa / 100:.2f}</b></p>", unsafe_allow_html=True)
-    st.markdown(f"<p style='font-size:18px;'>- <b>Atención No Directa</b>: {'✅ CUMPLE' if cumple_no_directa else '❌ NO CUMPLE'} (Mínimo 0,15). Ratio: <b>{ratio_no_directa / 100:.2f}</b></p>", unsafe_allow_html=True)
-    st.markdown(f"<p style='font-size:18px;'>- <b>Gerocultores</b>: {'✅ CUMPLE' if cumple_gerocultores else '❌ NO CUMPLE'} (Mínimo 0,33). Ratio: <b>{(calcular_equivalentes_jornada_completa(datos_directas.get('Gerocultor', 0)) / ocupacion):.2f}</b></p>", unsafe_allow_html=True)
+    st.markdown(f"<p style='font-size:18px; color:{'red' if not cumple_directa else 'green'};'>- <b>Atención Directa</b>: {'✅ CUMPLE' if cumple_directa else '❌ NO CUMPLE'} (Mínimo 0,47). Ratio: <b>{ratio_directa / 100:.2f}</b></p>", unsafe_allow_html=True)
+    st.markdown(f"<p style='font-size:18px; color:{'red' if not cumple_no_directa else 'green'};'>- <b>Atención No Directa</b>: {'✅ CUMPLE' if cumple_no_directa else '❌ NO CUMPLE'} (Mínimo 0,15). Ratio: <b>{ratio_no_directa / 100:.2f}</b></p>", unsafe_allow_html=True)
+    st.markdown(f"<p style='font-size:18px; color:{gerocultores_color};'>- <b>Gerocultores</b>: {'✅ CUMPLE' if cumple_gerocultores else '❌ NO CUMPLE'} (Mínimo 0,33). Ratio: <b>{(calcular_equivalentes_jornada_completa(datos_directas.get('Gerocultor', 0)) / ocupacion):.2f}</b></p>", unsafe_allow_html=True)
     
     # Resumen de ratios por categoría
     st.subheader("📋 Resumen de Ratios por Categoría")
     for categoria, horas in datos_directas.items():
         ratio_categoria = (calcular_equivalentes_jornada_completa(horas) / ocupacion) * 100
-        st.markdown(f"<p style='font-size:18px;'>🔹 <b>{categoria}</b> → Ratio: <b>{ratio_categoria:.2f}</b> por cada 100 residentes</p>", unsafe_allow_html=True)
+        categoria_color = "red" if ratio_categoria / 100 < 0.33 and categoria == "Gerocultor" else "green"
+        st.markdown(f"<p style='font-size:18px; color:{categoria_color};'>🔹 <b>{categoria}</b> → Ratio: <b>{ratio_categoria:.2f}</b> por cada 100 residentes</p>", unsafe_allow_html=True)
     for categoria, horas in datos_no_directas.items():
         ratio_categoria = (calcular_equivalentes_jornada_completa(horas) / ocupacion) * 100
-        st.markdown(f"<p style='font-size:18px;'>🔹 <b>{categoria}</b> → Ratio: <b>{ratio_categoria:.2f}</b> por cada 100 residentes</p>", unsafe_allow_html=True)
+        categoria_color = "green" if ratio_categoria / 100 >= 0.15 else "red"
+        st.markdown(f"<p style='font-size:18px; color:{categoria_color};'>🔹 <b>{categoria}</b> → Ratio: <b>{ratio_categoria:.2f}</b> por cada 100 residentes</p>", unsafe_allow_html=True)
