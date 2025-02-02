@@ -12,11 +12,21 @@ def calcular_equivalentes_jornada_completa(horas_semanales):
 
 # Función para calcular las horas necesarias de fisioterapia y terapia ocupacional
 def calcular_horas(plazas):
-    base_horas = 20  # Para 1 a 50 plazas (4 horas/día x 5 días)
+    """
+    Calcula las horas necesarias de fisioterapia y terapia ocupacional según las plazas ocupadas.
+    """
+    base_horas_diarias = 4  # 4 horas diarias para los primeros 50 residentes
+    dias_semana = 5  # De lunes a viernes
+    horas_totales = base_horas_diarias * dias_semana  # Horas para los primeros 50 residentes
+
     if plazas > 50:
-        incremento = ((plazas - 50) // 25 + 1) * 10  # 2 horas/día x 5 días por cada 25 plazas adicionales
-        base_horas += incremento
-    return base_horas
+        plazas_adicionales = plazas - 50
+        # Incremento de 2 horas diarias por cada 25 plazas adicionales o fracción
+        incrementos = (plazas_adicionales + 24) // 25  # Redondeo hacia arriba
+        horas_adicionales_diarias = incrementos * 2
+        horas_totales += horas_adicionales_diarias * dias_semana
+
+    return horas_totales
 
 # Función para verificar formato de ratios
 def formatear_ratio(valor):
@@ -108,10 +118,3 @@ if st.button("📌 Calcular Ratio"):
     st.markdown(f"<p style='font-size:18px; color:{'red' if not cumple_directa else 'green'};'>- <b>Atención Directa</b>: {'✅ CUMPLE' if cumple_directa else '❌ NO CUMPLE'} (Mínimo 0,47). Ratio: <b>{ratio_directa / 100:.2f}</b></p>", unsafe_allow_html=True)
     st.markdown(f"<p style='font-size:18px; color:{'red' if not cumple_no_directa else 'green'};'>- <b>Atención No Directa</b>: {'✅ CUMPLE' if cumple_no_directa else '❌ NO CUMPLE'} (Mínimo 0,15). Ratio: <b>{ratio_no_directa / 100:.2f}</b></p>", unsafe_allow_html=True)
     st.markdown(f"<p style='font-size:18px; color:{gerocultores_color};'>- <b>Gerocultores</b>: {'✅ CUMPLE' if cumple_gerocultores else '❌ NO CUMPLE'} (Mínimo 0,33). Ratio: <b>{(calcular_equivalentes_jornada_completa(datos_directas.get('Gerocultor', 0)) / ocupacion):.2f}</b></p>", unsafe_allow_html=True)
-
-    # Resumen de ratios por categoría
-    st.subheader("📋 Resumen de Ratios por Categoría")
-    for categoria, horas in datos_directas.items():
-        ratio_categoria = (calcular_equivalentes_jornada_completa(horas) / ocupacion) * 100
-        categoria_color = "red" if ratio_categoria / 100 < 0.33 and categoria == "Gerocultor" else "green"
-        st.markdown(f"<p style='font-size:18px; color:{categoria_color};'>🔹 <b>{categoria}</b> → Ratio: <b>{ratio_categoria:.2f}</b> por cada 100 residentes</p>", unsafe_allow_html=True)
