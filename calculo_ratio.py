@@ -17,8 +17,8 @@ directas = [
 
 no_directas = ["Limpieza", "Cocina", "Mantenimiento"]
 
-st.title("📊 Cálculo de Ratio de Personal - Comunidad de Madrid")
-st.write("Ingrese las horas semanales de cada categoría para calcular la ratio de personal.")
+st.title("Ádrika - 📊 Cálculo de Ratio de Personal - CAM")
+st.write("**Ingrese las horas semanales de cada categoría para calcular la ratio de personal.**")
 
 # Ingreso de ocupación al principio
 st.subheader("🏥 Ocupación de la Residencia")
@@ -47,8 +47,8 @@ if st.button("📌 Calcular Ratio"):
     
     # Mostrar resultados
     st.subheader("📊 Resultados del Cálculo de Ratios")
-    st.write(f"🔹 **Atención Directa** → Total EQ: `{total_eq_directa:.2f}` | Ratio: `{ratio_directa:.2f}` por cada 100 residentes")
-    st.write(f"🔹 **Atención No Directa** → Total EQ: `{total_eq_no_directa:.2f}` | Ratio: `{ratio_no_directa:.2f}` por cada 100 residentes")
+    st.markdown(f"<p style='font-size:18px;'>🔹 <b>Atención Directa</b> → Total EQ: <b>{total_eq_directa:.2f}</b> | Ratio: <b>{ratio_directa:.2f}</b> por cada 100 residentes</p>", unsafe_allow_html=True)
+    st.markdown(f"<p style='font-size:18px;'>🔹 <b>Atención No Directa</b> → Total EQ: <b>{total_eq_no_directa:.2f}</b> | Ratio: <b>{ratio_no_directa:.2f}</b> por cada 100 residentes</p>", unsafe_allow_html=True)
     
     # Verificación de cumplimiento
     cumple_directa = ratio_directa / 100 >= 0.47
@@ -56,15 +56,15 @@ if st.button("📌 Calcular Ratio"):
     cumple_gerocultores = (calcular_equivalentes_jornada_completa(datos_directas.get("Gerocultor", 0)) / ocupacion) >= 0.33
     
     st.subheader("✅ Verificación de cumplimiento con la CAM")
-    st.write(f"- **Atención Directa**: {'✅ CUMPLE' if cumple_directa else '❌ NO CUMPLE'} (Mínimo 0.47). Ratio: `{ratio_directa / 100:.2f}`")
-    st.write(f"- **Atención No Directa**: {'✅ CUMPLE' if cumple_no_directa else '❌ NO CUMPLE'} (Mínimo 0.15). Ratio: `{ratio_no_directa / 100:.2f}`")
-    st.write(f"- **Gerocultores**: {'✅ CUMPLE' if cumple_gerocultores else '❌ NO CUMPLE'} (Mínimo 0.33). Ratio: `{(calcular_equivalentes_jornada_completa(datos_directas.get('Gerocultor', 0)) / ocupacion):.2f}`")
+    st.markdown(f"<p style='font-size:18px;'>- <b>Atención Directa</b>: {'✅ CUMPLE' if cumple_directa else '❌ NO CUMPLE'} (Mínimo 0,47). Ratio: <b>{ratio_directa / 100:.2f}</b></p>", unsafe_allow_html=True)
+    st.markdown(f"<p style='font-size:18px;'>- <b>Atención No Directa</b>: {'✅ CUMPLE' if cumple_no_directa else '❌ NO CUMPLE'} (Mínimo 0,15). Ratio: <b>{ratio_no_directa / 100:.2f}</b></p>", unsafe_allow_html=True)
+    st.markdown(f"<p style='font-size:18px;'>- <b>Gerocultores</b>: {'✅ CUMPLE' if cumple_gerocultores else '❌ NO CUMPLE'} (Mínimo 0,33). Ratio: <b>{(calcular_equivalentes_jornada_completa(datos_directas.get('Gerocultor', 0)) / ocupacion):.2f}</b></p>", unsafe_allow_html=True)
     
     # Resumen de ratios por categoría
     st.subheader("📋 Resumen de Ratios por Categoría")
     for categoria, horas in datos_directas.items():
         ratio_categoria = (calcular_equivalentes_jornada_completa(horas) / ocupacion) * 100
-        st.write(f"🔹 **{categoria}** → Ratio: `{ratio_categoria:.2f}` por cada 100 residentes")
+        st.markdown(f"<p style='font-size:18px;'>🔹 <b>{categoria}</b> → Ratio: <b>{ratio_categoria:.2f}</b> por cada 100 residentes</p>", unsafe_allow_html=True)
     for categoria, horas in datos_no_directas.items():
         ratio_categoria = (calcular_equivalentes_jornada_completa(horas) / ocupacion) * 100
-        st.write(f"🔹 **{categoria}** → Ratio: `{ratio_categoria:.2f}` por cada 100 residentes")
+        st.markdown(f"<p style='font-size:18px;'>🔹 <b>{categoria}</b> → Ratio: <b>{ratio_categoria:.2f}</b> por cada 100 residentes</p>", unsafe_allow_html=True)
