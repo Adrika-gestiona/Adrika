@@ -75,6 +75,13 @@ for categoria in no_directas:
     datos_no_directas[categoria] = st.number_input(f"{categoria} (horas/semana)", min_value=0.0, format="%.2f")
 
 if st.button("📌 Calcular Ratio"):
+    st.subheader("ℹ️ Información sobre las ratios")
+    st.write("- **Atención Directa**: Se requiere un mínimo de 0,47.")
+    st.write("- **Gerocultores**: Mínimo de 0,33 por cada residente.")
+    st.write("- **Atención No Directa**: Mínimo de 0,15.")
+    st.write("- **Fisioterapeuta y Terapeuta Ocupacional**: Presencia mínima de 4 horas diarias de lunes a viernes para 1-50 plazas. Por cada 25 plazas adicionales o fracción, se incrementan 2 horas diarias.")
+    st.write("- **Psicólogo y Animador Sociocultural**: Servicios opcionales.")
+    st.write("- **Trabajador Social**: Contratación obligatoria, sin horas mínimas específicas.")
     # Calcular equivalentes a jornada completa
     total_eq_directa = sum(calcular_equivalentes_jornada_completa(hs) for hs in datos_directas.values())
     total_eq_no_directa = sum(calcular_equivalentes_jornada_completa(hs) for hs in datos_no_directas.values())
@@ -107,8 +114,4 @@ if st.button("📌 Calcular Ratio"):
     for categoria, horas in datos_directas.items():
         ratio_categoria = (calcular_equivalentes_jornada_completa(horas) / ocupacion) * 100
         categoria_color = "red" if ratio_categoria / 100 < 0.33 and categoria == "Gerocultor" else "green"
-        st.markdown(f"<p style='font-size:18px; color:{categoria_color};'>🔹 <b>{categoria}</b> → Ratio: <b>{ratio_categoria:.2f}</b> por cada 100 residentes</p>", unsafe_allow_html=True)
-    for categoria, horas in datos_no_directas.items():
-        ratio_categoria = (calcular_equivalentes_jornada_completa(horas) / ocupacion) * 100
-        categoria_color = "green" if ratio_categoria / 100 >= 0.15 else "red"
         st.markdown(f"<p style='font-size:18px; color:{categoria_color};'>🔹 <b>{categoria}</b> → Ratio: <b>{ratio_categoria:.2f}</b> por cada 100 residentes</p>", unsafe_allow_html=True)
