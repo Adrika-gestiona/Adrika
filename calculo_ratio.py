@@ -48,7 +48,7 @@ def generar_resumen_ratios(ratios):
     return resumen
 
 # Interfaz con Streamlit
-st.title("Ádrika - 📊 Cálculo de Ratio de Personal - CAM")
+st.title("Ádrika - 📊 Cálculo de ratio de personal - CAM")
 st.write("**Ingrese las horas semanales de cada categoría para calcular la ratio de personal.**")
 
 # Ingreso de ocupación al principio
