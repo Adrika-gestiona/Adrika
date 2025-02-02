@@ -84,7 +84,7 @@ if st.button("📌 Calcular Ratio"):
     ratio_no_directa = (total_eq_no_directa / ocupacion) * 100
 
     # Mostrar resultados
-    st.subheader("📊 Resultados del Cálculo de Ratios")
+    st.subheader("📊 Resultados del cálculo de ratios")
     ratio_directa_color = "red" if ratio_directa / 100 < 0.47 else "green"
     ratio_no_directa_color = "red" if ratio_no_directa / 100 < 0.15 else "green"
 
@@ -103,7 +103,7 @@ if st.button("📌 Calcular Ratio"):
     st.markdown(f"<p style='font-size:18px; color:{gerocultores_color};'>- <b>Gerocultores</b>: {'✅ CUMPLE' if cumple_gerocultores else '❌ NO CUMPLE'} (Mínimo 0,33). Ratio: <b>{(calcular_equivalentes_jornada_completa(datos_directas.get('Gerocultor', 0)) / ocupacion):.2f}</b></p>", unsafe_allow_html=True)
 
     # Resumen de ratios por categoría
-    st.subheader("📋 Resumen de Ratios por Categoría")
+    st.subheader("📋 Resumen de ratios por categoría")
     for categoria, horas in datos_directas.items():
         ratio_categoria = (calcular_equivalentes_jornada_completa(horas) / ocupacion) * 100
         categoria_color = "red" if ratio_categoria / 100 < 0.33 and categoria == "Gerocultor" else "green"
