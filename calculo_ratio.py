@@ -85,16 +85,6 @@ for categoria in no_directas:
     datos_no_directas[categoria] = st.number_input(f"{categoria} (horas/semana)", min_value=0.0, format="%.2f")
 
 if st.button("📌 Calcular Ratio"):
-    st.subheader("ℹ️ Información sobre las ratios")
-    st.write("- **Atención Directa**: Se requiere un mínimo de 0,47.")
-    st.write("- **Servicio médico**: Presencia física diaria de lunes a viernes y los fines de semana localizable. Esta atención se prestará preferentemente por médico geriatra.")
-    st.write("- **Enfermería**: Presencia física de lunes a domingo, todos los días del año, garantizándose el carácter continuo y permanente del servicio.")
-    st.write("- **Gerocultores**: Mínimo de 0,33 por cada residente.")
-    st.write("- **Fisioterapeuta y Terapeuta Ocupacional**: Presencia mínima de 4 horas diarias de lunes a viernes para 1-50 plazas. Por cada 25 plazas adicionales o fracción, se incrementan 2 horas diarias.")
-    st.write("- **Psicólogo y Animador Sociocultural**: Servicios opcionales.")
-    st.write("- **Trabajador Social**: Contratación obligatoria, sin horas mínimas específicas.")
-    
-    st.write("- **Atención No Directa**: Mínimo de 0,15.")
     # Calcular equivalentes a jornada completa
     total_eq_directa = sum(calcular_equivalentes_jornada_completa(hs) for hs in datos_directas.values())
     total_eq_no_directa = sum(calcular_equivalentes_jornada_completa(hs) for hs in datos_no_directas.values())
@@ -121,3 +111,13 @@ if st.button("📌 Calcular Ratio"):
     st.markdown(f"<p style='font-size:18px; color:{'red' if not cumple_directa else 'green'};'>- <b>Atención Directa</b>: {'✅ CUMPLE' if cumple_directa else '❌ NO CUMPLE'} (Mínimo 0,47). Ratio: <b>{ratio_directa / 100:.2f}</b></p>", unsafe_allow_html=True)
     st.markdown(f"<p style='font-size:18px; color:{'red' if not cumple_no_directa else 'green'};'>- <b>Atención No Directa</b>: {'✅ CUMPLE' if cumple_no_directa else '❌ NO CUMPLE'} (Mínimo 0,15). Ratio: <b>{ratio_no_directa / 100:.2f}</b></p>", unsafe_allow_html=True)
     st.markdown(f"<p style='font-size:18px; color:{gerocultores_color};'>- <b>Gerocultores</b>: {'✅ CUMPLE' if cumple_gerocultores else '❌ NO CUMPLE'} (Mínimo 0,33). Ratio: <b>{(calcular_equivalentes_jornada_completa(datos_directas.get('Gerocultor', 0)) / ocupacion):.2f}</b></p>", unsafe_allow_html=True)
+    st.subheader("ℹ️ Información sobre las ratios")
+    st.write("- **Atención Directa**: Se requiere un mínimo de 0,47.")
+    st.write("- **Servicio médico**: Presencia física diaria de lunes a viernes y los fines de semana localizable. Esta atención se prestará preferentemente por médico geriatra.")
+    st.write("- **Enfermería**: Presencia física de lunes a domingo, todos los días del año, garantizándose el carácter continuo y permanente del servicio.")
+    st.write("- **Gerocultores**: Mínimo de 0,33 por cada residente.")
+    st.write("- **Fisioterapeuta y Terapeuta Ocupacional**: Presencia mínima de 4 horas diarias de lunes a viernes para 1-50 plazas. Por cada 25 plazas adicionales o fracción, se incrementan 2 horas diarias.")
+    st.write("- **Psicólogo y Animador Sociocultural**: Servicios opcionales.")
+    st.write("- **Trabajador Social**: Contratación obligatoria, sin horas mínimas específicas.")
+    
+    st.write("- **Atención No Directa**: Mínimo de 0,15.")
