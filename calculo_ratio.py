@@ -58,7 +58,7 @@ def generar_resumen_ratios(ratios):
     return resumen
 
 # Interfaz con Streamlit
-st.title("Ádrika - 📊 Cálculo de RATIO de personal - CAM")
+st.title("Ádrika - 📊 cálculo de RATIO de personal - CAM")
 st.write("**Ingrese las horas semanales de cada categoría para calcular la ratio de personal.**")
 
 # Ingreso de ocupación al principio
@@ -67,39 +67,25 @@ ocupacion = st.number_input("Ingrese el número de residentes", min_value=1, for
 
 # Definir las categorías de personal
 directas = [
-    "Médico (horas/semana)", "ATS/DUE (horas/semana)", "Gerocultor (horas/semana)", "Fisioterapeuta (horas/semana)", "Terapeuta Ocupacional (horas/semana)",
-    "Trabajador Social (horas/semana)", "Psicólogo/a (horas/semana)", "Animador sociocultural / TASOC (horas/semana)", "Director/a (horas/semana)"
+    "Médico", "ATS/DUE (Enfermería)", "Gerocultor", "Fisioterapeuta", "Terapeuta Ocupacional",
+    "Trabajador Social", "Psicólogo/a", "Animador sociocultural / TASOC", "Director/a"
 ]
 
-no_directas = ["Limpieza (horas/semana)", "Cocina (horas/semana)", "Mantenimiento (horas/semana)"]
+no_directas = ["Limpieza", "Cocina", "Mantenimiento"]
 
 datos_directas = {}
 datos_no_directas = {}
 
 st.subheader("🔹 Horas semanales de Atención Directa")
 for categoria in directas:
-    datos_directas[categoria] = st.number_input(f"{categoria}", min_value=0.0, format="%.2f")
+    datos_directas[categoria] = st.number_input(f"{categoria} (horas/semana)", min_value=0.0, format="%.2f")
 
 st.subheader("🔹 Horas semanales de Atención No Directa")
 for categoria in no_directas:
-    datos_no_directas[categoria] = st.number_input(f"{categoria}", min_value=0.0, format="%.2f")
+    datos_no_directas[categoria] = st.number_input(f"{categoria} (horas/semana)", min_value=0.0, format="%.2f")
 
 if st.button("📌 Calcular Ratio"):
-    # Calcular equivalentes a jornada completa
-    total_eq_directa = sum(calcular_equivalentes_jornada_completa(hs) for hs in datos_directas.values())
-    total_eq_no_directa = sum(calcular_equivalentes_jornada_completa(hs) for hs in datos_no_directas.values())
-
-    # Calcular ratios
-    ratio_directa = (total_eq_directa / ocupacion) * 100
-    ratio_no_directa = (total_eq_no_directa / ocupacion) * 100
-
-    # Mostrar resultados
-    st.subheader("📊 Resultados del Cálculo de Ratios")
-    st.write(f"🔹 **Atención Directa** → Total EQ: {total_eq_directa:.2f} | Ratio: {ratio_directa:.2f} por cada 100 residentes")
-    st.write(f"🔹 **Atención No Directa** → Total EQ: {total_eq_no_directa:.2f} | Ratio: {ratio_no_directa:.2f} por cada 100 residentes")
-
-    # Verificación de cumplimiento con la CAM
     st.subheader("ℹ️ Información sobre las ratios")
     st.write("- **Atención médica**: Presencia física de lunes a viernes y localizable los fines de semana, preferiblemente por un médico geriatra.")
     st.write("- **Cuidados de enfermería**: Obligatorio con presencia física de lunes a domingo, garantizando el servicio continuo y permanente.")
-    st.write("- **Gerocultores**: Plantilla con la formación requerida, con frecuencia y calidad exigida, garantizando el servicio continuo todos los días del año.")
+    st.write("- **Gerocultores**: Plantilla integrada por profesionales con la formación requerida, con la frecuencia y calidad exigida, todos los días del año, garantizándose el carácter continuo y permanente del servicio de lunes a domingo.")
