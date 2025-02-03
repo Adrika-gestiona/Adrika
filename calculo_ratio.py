@@ -87,11 +87,14 @@ for categoria in no_directas:
 if st.button("📌 Calcular Ratio"):
     st.subheader("ℹ️ Información sobre las ratios")
     st.write("- **Atención Directa**: Se requiere un mínimo de 0,47.")
+    st.write("- **Servicio médico**: Presencia física diaria de lunes a viernes y los fines de semana localizable. Esta atención se prestará preferentemente por médico geriatra.")
+    st.write("- **Enfermería**: Presencia física de lunes a domingo, todos los días del año, garantizándose el carácter continuo y permanente del servicio.")
     st.write("- **Gerocultores**: Mínimo de 0,33 por cada residente.")
-    st.write("- **Atención No Directa**: Mínimo de 0,15.")
     st.write("- **Fisioterapeuta y Terapeuta Ocupacional**: Presencia mínima de 4 horas diarias de lunes a viernes para 1-50 plazas. Por cada 25 plazas adicionales o fracción, se incrementan 2 horas diarias.")
     st.write("- **Psicólogo y Animador Sociocultural**: Servicios opcionales.")
     st.write("- **Trabajador Social**: Contratación obligatoria, sin horas mínimas específicas.")
+    
+    st.write("- **Atención No Directa**: Mínimo de 0,15.")
     # Calcular equivalentes a jornada completa
     total_eq_directa = sum(calcular_equivalentes_jornada_completa(hs) for hs in datos_directas.values())
     total_eq_no_directa = sum(calcular_equivalentes_jornada_completa(hs) for hs in datos_no_directas.values())
