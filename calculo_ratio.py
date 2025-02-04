@@ -17,7 +17,7 @@ def calcular_horas(plazas):
 
     - Para hasta 50 residentes: 4 horas diarias (de lunes a viernes) = 20 h/semana.
     - A partir de ahí, por cada 25 residentes adicionales (o fracción),
-      se añaden 2 horas diarias (10 h/semana), incluyendo incrementos parciales
+      se añaden 2 horas diarias (10 h/semana), teniendo en cuenta incrementos parciales
       si no se completa el siguiente bloque de 25.
     """
     dias_semana = 5
@@ -43,11 +43,10 @@ def formatear_ratio(valor):
     """
     if valor is None or not math.isfinite(valor):
         return "Valor no válido"
-
     return f"{Decimal(str(valor)).quantize(Decimal('0.00'))}".replace('.', ',')
 
 # ---------------------------------------------------------------------------------------------
-# INTERFAZ DE STREAMLIT (FORMATO ANTERIOR)
+# INTERFAZ DE STREAMLIT
 # ---------------------------------------------------------------------------------------------
 
 st.title("Ádrika - 📊 cálculo de RATIO de personal - CAM")
@@ -57,22 +56,22 @@ st.write("**Ingrese las horas semanales de cada categoría para calcular la rati
 st.subheader("🏥 Ocupación de la Residencia")
 ocupacion = st.number_input(
     "Ingrese el número de residentes",
-    min_value=2,      # Ocupación mínima 2
-    value=2,          # Valor inicial
+    min_value=0,      # Por defecto 0, para obligar a que lo cambien
+    value=0,
     step=1,
-    format="%d"       # Evita warning y usa enteros
+    format="%d"
 )
 
 # Definir categorías de personal
 directas = [
-    "Médico", 
-    "ATS/DUE (Enfermería)", 
-    "Gerocultor", 
-    "Fisioterapeuta", 
+    "Médico",
+    "ATS/DUE (Enfermería)",
+    "Gerocultor",
+    "Fisioterapeuta",
     "Terapeuta Ocupacional",
-    "Trabajador Social", 
-    "Psicólogo/a", 
-    "Animador sociocultural / TASOC", 
+    "Trabajador Social",
+    "Psicólogo/a",
+    "Animador sociocultural / TASOC",
     "Director/a"
 ]
 no_directas = ["Limpieza", "Cocina", "Mantenimiento"]
@@ -103,15 +102,23 @@ for categoria in no_directas:
 # Botón para realizar el cálculo
 if st.button("📌 Calcular Ratio"):
 
-    # 1) Calcular EJC totales de Atención Directa y No Directa
+    # 1) Verificar si se ha introducido la ocupación
+    if ocupacion == 0:
+        # Mostramos mensaje de error y NO calculamos nada
+        st.error("⚠️ Debe introducir el número de residentes (mayor que 0).")
+        st.stop()  # Detiene la ejecución del script aquí
+    
+    # Si llegamos aquí, ocupacion > 0
+    # Podrías forzar que fuera min_value=2, etc., pero así ya aseguramos que no sea 0.
+
+    # 2) Calcular EJC totales de Atención Directa y No Directa
     total_eq_directa = sum(calcular_equivalentes_jornada_completa(hs) for hs in datos_directas.values())
     total_eq_no_directa = sum(calcular_equivalentes_jornada_completa(hs) for hs in datos_no_directas.values())
 
-    # 2) Calcular los ratios por cada 100 residentes
+    # 3) Calcular los ratios por cada 100 residentes
     ratio_directa = (total_eq_directa / ocupacion) * 100
     ratio_no_directa = (total_eq_no_directa / ocupacion) * 100
 
-    # 3) Mostrar resultados
     st.subheader("📊 Resultados del Cálculo de Ratios")
     ratio_directa_color = "green" if ratio_directa / 100 >= 0.47 else "red"
     ratio_no_directa_color = "green" if ratio_no_directa / 100 >= 0.15 else "red"
@@ -173,7 +180,7 @@ if st.button("📌 Calcular Ratio"):
 
     texto_fisio = (
         f"<p style='font-size:16px; color:{'green' if cumple_fisio else 'red'};'>"
-        f"🔹 <b>Fisioterapeuta</b>: Horas requeridas a la semana: "
+        f"🔹 <b>Fisioterapeuta</b>: Horas requeridas/semana: "
         f"<b>{formatear_ratio(horas_necesarias_terapia)}</b>. "
         f"Horas introducidas: <b>{formatear_ratio(horas_fisio_usuario)}</b> → "
         f"{'✅ CUMPLE' if cumple_fisio else '❌ NO CUMPLE'}"
@@ -183,7 +190,7 @@ if st.button("📌 Calcular Ratio"):
 
     texto_to = (
         f"<p style='font-size:16px; color:{'green' if cumple_to else 'red'};'>"
-        f"🔹 <b>Terapeuta Ocupacional</b>: Horas requeridas a la semana: "
+        f"🔹 <b>Terapeuta Ocupacional</b>: Horas requeridas/semana: "
         f"<b>{formatear_ratio(horas_necesarias_terapia)}</b>. "
         f"Horas introducidas: <b>{formatear_ratio(horas_to_usuario)}</b> → "
         f"{'✅ CUMPLE' if cumple_to else '❌ NO CUMPLE'}"
@@ -191,14 +198,56 @@ if st.button("📌 Calcular Ratio"):
     )
     st.markdown(texto_to, unsafe_allow_html=True)
 
-    # 6) Información adicional
+    # 6) Otras comprobaciones específicas
+    # - Trabajador Social: obligado a tener alguna hora (si 0 => NO CUMPLE).
+    horas_ts = datos_directas.get("Trabajador Social", 0)
+    cumple_ts = (horas_ts > 0)
+    
+    # - Médico: no puede ser 0, debe tener al menos 1h/sem
+    horas_medico = datos_directas.get("Médico", 0)
+    cumple_medico = (horas_medico > 0)
+
+    # - Enfermería: mínimo 168h/semana para asegurar 24h x 7 días
+    horas_enfermeria = datos_directas.get("ATS/DUE (Enfermería)", 0)
+    cumple_enfermeria = (horas_enfermeria >= 168)
+
+    st.subheader("🔎 Verificación de requisitos específicos")
+    # Trabajador Social
+    st.markdown(f"""
+    <p style='font-size:16px; color:{"green" if cumple_ts else "red"};'>
+        🔹 <b>Trabajador Social</b>: Se exige contratación obligatoria (sin horas mínimas).
+        Horas introducidas: <b>{formatear_ratio(horas_ts)}</b> → 
+        {"✅ CUMPLE" if cumple_ts else "❌ NO CUMPLE (debe ser > 0)"}
+    </p>
+    """, unsafe_allow_html=True)
+
+    # Médico
+    st.markdown(f"""
+    <p style='font-size:16px; color:{"green" if cumple_medico else "red"};'>
+        🔹 <b>Médico</b>: Presencia (no se pueden tener 0h). 
+        Horas introducidas: <b>{formatear_ratio(horas_medico)}</b> → 
+        {"✅ CUMPLE" if cumple_medico else "❌ NO CUMPLE (debe ser > 0)"}
+    </p>
+    """, unsafe_allow_html=True)
+
+    # Enfermería
+    st.markdown(f"""
+    <p style='font-size:16px; color:{"green" if cumple_enfermeria else "red"};'>
+        🔹 <b>Enfermería (ATS/DUE)</b>: 
+        Presencia 24h/día, 7 días/semana = 168h/semana mínimo.
+        Horas introducidas: <b>{formatear_ratio(horas_enfermeria)}</b> → 
+        {"✅ CUMPLE" if cumple_enfermeria else "❌ NO CUMPLE (debe ser ≥ 168h)"}
+    </p>
+    """, unsafe_allow_html=True)
+
+    # 7) Información adicional final
     st.subheader("ℹ️ Información sobre las ratios")
-    st.write("- **Atención Directa**: Se requiere un mínimo de 0,47 (EJC) por residente.")
+    st.write("- **Atención Directa**: Mínimo de 0,47 (EJC) por residente.")
     st.write("- **Gerocultores**: Mínimo de 0,33 (EJC) por residente.")
     st.write("- **Fisioterapeuta y Terapeuta Ocupacional**: 4 horas/día (20h/sem) para 1-50 plazas. "
              "Por cada 25 plazas más (o fracción), +2h/día (10h/sem).")
-    st.write("- **Servicio médico**: Presencia física diaria de lunes a viernes y fines de semana localizable.")
-    st.write("- **Enfermería**: Presencia física todos los días del año, garantizando continuidad.")
+    st.write("- **Trabajador Social**: Contratación obligatoria, sin horas mínimas específicas (pero > 0h).")
+    st.write("- **Médico**: Presencia física (no 0h) al menos de lunes a viernes; fines de semana localizable.")
+    st.write("- **Enfermería**: Presencia física 24h/día, 7 días/semana (≥168h/sem).")
     st.write("- **Psicólogo/a y Animador Sociocultural**: Servicios opcionales.")
-    st.write("- **Trabajador Social**: Contratación obligatoria, sin horas mínimas específicas.")
     st.write("- **Atención No Directa**: Mínimo de 0,15 (EJC) por residente.")
