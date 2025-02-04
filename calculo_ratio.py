@@ -1,4 +1,5 @@
 import streamlit as st
+import math
 from decimal import Decimal
 
 def calcular_equivalentes_jornada_completa(horas_semanales):
@@ -17,72 +18,60 @@ def calcular_horas(plazas):
 
     - Para hasta 50 residentes: 4 horas diarias (de lunes a viernes) = 20 h/semana.
     - A partir de ahí, por cada 25 residentes adicionales (o fracción),
-      se añaden 2 horas diarias (10 h/semana), pero permitiendo incrementos parciales
+      se añaden 2 horas diarias (10 h/semana), pero con incrementos parciales
       si no se completa el siguiente bloque de 25.
     """
     dias_semana = 5
     base_horas_diarias = 4.0  # 4 horas/día para 1-50 residentes
 
     if plazas <= 50:
-        # Para hasta 50 plazas, simplemente 4 horas diarias * 5 días
         horas_diarias = base_horas_diarias
     else:
         plazas_adicionales = plazas - 50
-        # Bloques enteros de 25
         incrementos_enteros = plazas_adicionales // 25
-        # Resto de plazas (bloque parcial)
         resto = plazas_adicionales % 25
-        # Horas adicionales por cada tramo entero de 25
         horas_adicionales_enteras = incrementos_enteros * 2.0
-        # Parte proporcional para el tramo incompleto
         horas_adicionales_parciales = (resto / 25.0) * 2.0
-        # Total de horas diarias
         horas_diarias = base_horas_diarias + horas_adicionales_enteras + horas_adicionales_parciales
-    
-    # Horas semanales (lunes a viernes)
+
     horas_semanales = horas_diarias * dias_semana
     return horas_semanales
 
 
-# Función para verificar formato de ratios (usa coma y 2 decimales)
 def formatear_ratio(valor):
-    return f"{Decimal(valor).quantize(Decimal('0.00')).replace('.', ',')}"
-
-# Verificación de horas exigidas de fisioterapia y terapia ocupacional
-def verificar_ratios(plazas_ocupadas, horas_fisioterapia, horas_terapia, trabajador_social):
     """
-    Se mantiene para que veas cómo se verifica el cumplimiento de horas
-    (aunque en este ejemplo no se use directamente en la interfaz).
+    Formatea un número a dos decimales y usando coma como separador decimal.
+    Maneja también el caso en que 'valor' sea infinito, NaN o None.
     """
-    resultados = {}
+    if valor is None or not math.isfinite(valor):
+        return "Valor no válido"
 
-    horas_necesarias = calcular_horas(plazas_ocupadas)  # semanales
-
-    # Verificar fisioterapia
-    resultados['fisioterapia'] = horas_fisioterapia >= horas_necesarias
-    # Verificar terapia ocupacional
-    resultados['terapia_ocupacional'] = horas_terapia >= horas_necesarias
-    # Verificar trabajador social
-    resultados['trabajador_social'] = trabajador_social  # Solo se ve si está contratado
-    return resultados
+    return f"{Decimal(str(valor)).quantize(Decimal('0.00'))}".replace('.', ',')
 
 
-def generar_resumen_ratios(ratios):
-    """
-    Ejemplo de función auxiliar (en tu versión no se usaba, pero la mantenemos por si la necesitas).
-    """
-    resumen = "\nResumen de Ratios:\n"
-    for categoria, ratio in ratios.items():
-        resumen += f"{categoria}: {formatear_ratio(ratio)}\n"
-    return resumen
+# -------------------------------------------------------------------------------------------------
+# INTERFAZ STREAMLIT
+# -------------------------------------------------------------------------------------------------
 
-# Interfaz con Streamlit
-st.title("Ádrika - 📊 cálculo de RATIO de personal - CAM")
+# Título un poco más pequeño que con st.title
+st.markdown("<h4>Ádrika - 📊 cálculo de RATIO de personal - CAM</h4>", unsafe_allow_html=True)
+
 st.write("**Ingrese las horas semanales de cada categoría para calcular la ratio de personal.**")
 
-# Ingreso de ocupación al principio
+# Sección para la ocupación
 st.subheader("🏥 Ocupación de la Residencia")
-ocupacion = st.number_input("Ingrese el número de residentes", min_value=1, format="%.0f")
+
+# Texto más grande para "Ingrese el número de residentes"
+st.markdown("<span style='font-size:16px; font-weight:bold;'>Ingrese el número de residentes:</span>", unsafe_allow_html=True)
+
+# Número de residentes (ocupación) - mínimo 2
+ocupacion = st.number_input(
+    label="",  # dejamos vacío el label para no duplicar
+    min_value=2,
+    value=2,
+    step=1,
+    format="%d"
+)
 
 # Definir las categorías de personal
 directas = [
@@ -101,23 +90,33 @@ no_directas = ["Limpieza", "Cocina", "Mantenimiento"]
 datos_directas = {}
 datos_no_directas = {}
 
+# Sección de horas directas
 st.subheader("🔹 Horas semanales de Atención Directa")
 for categoria in directas:
+    # Texto más grande para cada categoría
+    st.markdown(f"<span style='font-size:14px; font-weight:bold;'>{categoria} (horas/semana)</span>", unsafe_allow_html=True)
     datos_directas[categoria] = st.number_input(
-        f"{categoria} (horas/semana)",
+        label="",  # sin label para no duplicar
         min_value=0.0,
-        format="%.2f"
+        step=1.0,
+        format="%.2f",
+        key=f"directas_{categoria}"
     )
 
+# Sección de horas no directas
 st.subheader("🔹 Horas semanales de Atención No Directa")
 for categoria in no_directas:
+    st.markdown(f"<span style='font-size:14px; font-weight:bold;'>{categoria} (horas/semana)</span>", unsafe_allow_html=True)
     datos_no_directas[categoria] = st.number_input(
-        f"{categoria} (horas/semana)",
+        label="",  # sin label para no duplicar
         min_value=0.0,
-        format="%.2f"
+        step=1.0,
+        format="%.2f",
+        key=f"nodirectas_{categoria}"
     )
 
 
+# Botón para calcular
 if st.button("📌 Calcular Ratio"):
     # 1) Calcular equivalentes a jornada completa totales para Atención Directa y No Directa
     total_eq_directa = sum(calcular_equivalentes_jornada_completa(hs) for hs in datos_directas.values())
@@ -182,8 +181,8 @@ if st.button("📌 Calcular Ratio"):
     horas_fisio_usuario = datos_directas.get("Fisioterapeuta", 0)
     horas_to_usuario = datos_directas.get("Terapeuta Ocupacional", 0)
 
-    cumple_fisio = horas_fisio_usuario >= horas_necesarias_terapia
-    cumple_to = horas_to_usuario >= horas_necesarias_terapia
+    cumple_fisio = (horas_fisio_usuario >= horas_necesarias_terapia)
+    cumple_to = (horas_to_usuario >= horas_necesarias_terapia)
 
     st.subheader("🩺 Cálculo de horas Fisioterapia y Terapia Ocupacional")
     st.write(f"**Plazas ocupadas:** {ocupacion} residentes")
@@ -211,7 +210,7 @@ if st.button("📌 Calcular Ratio"):
     # 6) Información adicional
     st.subheader("ℹ️ Información sobre las ratios")
     st.write("- **Atención Directa**: Se requiere un mínimo de 0,47 (EJC) por residente.")
-    st.write("- **Servicio médico**: Presencia física diaria de lunes a viernes; fines de semana localizable.")
+    st.write("- **Servicio médico**: Presencia física diaria de lunes a viernes y fines de semana localizable.")
     st.write("- **Enfermería**: Presencia física continuada todos los días del año.")
     st.write("- **Gerocultores**: Mínimo de 0,33 (EJC) por residente.")
     st.write("- **Fisioterapeuta y Terapeuta Ocupacional**: 4 horas/día (20h/sem) para 1-50 plazas. "
