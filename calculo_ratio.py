@@ -11,14 +11,13 @@ def calcular_equivalentes_jornada_completa(horas_semanales):
     horas_anuales = horas_semanales * SEMANAS_AL_ANO
     return horas_anuales / HORAS_ANUALES_JORNADA_COMPLETA
 
-
 def calcular_horas(plazas):
     """
     Calcula las HORAS SEMANALES necesarias para Fisioterapia y Terapia Ocupacional.
 
     - Para hasta 50 residentes: 4 horas diarias (de lunes a viernes) = 20 h/semana.
     - A partir de ahí, por cada 25 residentes adicionales (o fracción),
-      se añaden 2 horas diarias (10 h/semana), pero con incrementos parciales
+      se añaden 2 horas diarias (10 h/semana), incluyendo incrementos parciales
       si no se completa el siguiente bloque de 25.
     """
     dias_semana = 5
@@ -37,7 +36,6 @@ def calcular_horas(plazas):
     horas_semanales = horas_diarias * dias_semana
     return horas_semanales
 
-
 def formatear_ratio(valor):
     """
     Formatea un número a dos decimales y usando coma como separador decimal.
@@ -48,32 +46,24 @@ def formatear_ratio(valor):
 
     return f"{Decimal(str(valor)).quantize(Decimal('0.00'))}".replace('.', ',')
 
+# ---------------------------------------------------------------------------------------------
+# INTERFAZ DE STREAMLIT (FORMATO ANTERIOR)
+# ---------------------------------------------------------------------------------------------
 
-# -------------------------------------------------------------------------------------------------
-# INTERFAZ STREAMLIT
-# -------------------------------------------------------------------------------------------------
-
-# Título un poco más pequeño que con st.title
-st.markdown("<h4>Ádrika - 📊 cálculo de RATIO de personal - CAM</h4>", unsafe_allow_html=True)
-
+st.title("Ádrika - 📊 cálculo de RATIO de personal - CAM")
 st.write("**Ingrese las horas semanales de cada categoría para calcular la ratio de personal.**")
 
-# Sección para la ocupación
+# Sección: Ocupación de la Residencia
 st.subheader("🏥 Ocupación de la Residencia")
-
-# Texto más grande para "Ingrese el número de residentes"
-st.markdown("<span style='font-size:16px; font-weight:bold;'>Ingrese el número de residentes:</span>", unsafe_allow_html=True)
-
-# Número de residentes (ocupación) - mínimo 2
 ocupacion = st.number_input(
-    label="",  # dejamos vacío el label para no duplicar
-    min_value=2,
-    value=2,
+    "Ingrese el número de residentes",
+    min_value=2,      # Ocupación mínima 2
+    value=2,          # Valor inicial
     step=1,
-    format="%d"
+    format="%d"       # Evita warning y usa enteros
 )
 
-# Definir las categorías de personal
+# Definir categorías de personal
 directas = [
     "Médico", 
     "ATS/DUE (Enfermería)", 
@@ -90,35 +80,30 @@ no_directas = ["Limpieza", "Cocina", "Mantenimiento"]
 datos_directas = {}
 datos_no_directas = {}
 
-# Sección de horas directas
+# Horas de Atención Directa
 st.subheader("🔹 Horas semanales de Atención Directa")
 for categoria in directas:
-    # Texto más grande para cada categoría
-    st.markdown(f"<span style='font-size:14px; font-weight:bold;'>{categoria} (horas/semana)</span>", unsafe_allow_html=True)
     datos_directas[categoria] = st.number_input(
-        label="",  # sin label para no duplicar
+        f"{categoria} (horas/semana)",
         min_value=0.0,
-        step=1.0,
         format="%.2f",
         key=f"directas_{categoria}"
     )
 
-# Sección de horas no directas
+# Horas de Atención No Directa
 st.subheader("🔹 Horas semanales de Atención No Directa")
 for categoria in no_directas:
-    st.markdown(f"<span style='font-size:14px; font-weight:bold;'>{categoria} (horas/semana)</span>", unsafe_allow_html=True)
     datos_no_directas[categoria] = st.number_input(
-        label="",  # sin label para no duplicar
+        f"{categoria} (horas/semana)",
         min_value=0.0,
-        step=1.0,
         format="%.2f",
         key=f"nodirectas_{categoria}"
     )
 
-
-# Botón para calcular
+# Botón para realizar el cálculo
 if st.button("📌 Calcular Ratio"):
-    # 1) Calcular equivalentes a jornada completa totales para Atención Directa y No Directa
+
+    # 1) Calcular EJC totales de Atención Directa y No Directa
     total_eq_directa = sum(calcular_equivalentes_jornada_completa(hs) for hs in datos_directas.values())
     total_eq_no_directa = sum(calcular_equivalentes_jornada_completa(hs) for hs in datos_no_directas.values())
 
@@ -126,10 +111,10 @@ if st.button("📌 Calcular Ratio"):
     ratio_directa = (total_eq_directa / ocupacion) * 100
     ratio_no_directa = (total_eq_no_directa / ocupacion) * 100
 
-    # 3) Mostrar resultados del cálculo de Ratios
+    # 3) Mostrar resultados
     st.subheader("📊 Resultados del Cálculo de Ratios")
-    ratio_directa_color = "red" if ratio_directa / 100 < 0.47 else "green"
-    ratio_no_directa_color = "red" if ratio_no_directa / 100 < 0.15 else "green"
+    ratio_directa_color = "green" if ratio_directa / 100 >= 0.47 else "red"
+    ratio_no_directa_color = "green" if ratio_no_directa / 100 >= 0.15 else "red"
 
     st.markdown(f"""
     <p style='font-size:18px; color:{ratio_directa_color};'>
@@ -145,11 +130,10 @@ if st.button("📌 Calcular Ratio"):
     </p>
     """, unsafe_allow_html=True)
 
-    # 4) Verificación de cumplimiento de ratios globales
+    # 4) Verificación de cumplimiento global de ratios CAM
     cumple_directa = (ratio_directa / 100) >= 0.47
     cumple_no_directa = (ratio_no_directa / 100) >= 0.15
 
-    # Gerocultores: mínimo 0,33 por residente
     eq_gerocultores = calcular_equivalentes_jornada_completa(datos_directas.get("Gerocultor", 0))
     ratio_gerocultores = eq_gerocultores / ocupacion
     cumple_gerocultores = ratio_gerocultores >= 0.33
@@ -176,8 +160,8 @@ if st.button("📌 Calcular Ratio"):
     </p>
     """, unsafe_allow_html=True)
 
-    # 5) Calcular y mostrar las horas semanales requeridas para Fisioterapia y Terapia Ocupacional
-    horas_necesarias_terapia = calcular_horas(ocupacion)  # horas semanales
+    # 5) Cálculo de horas Fisioterapia y Terapia Ocupacional
+    horas_necesarias_terapia = calcular_horas(ocupacion)
     horas_fisio_usuario = datos_directas.get("Fisioterapeuta", 0)
     horas_to_usuario = datos_directas.get("Terapeuta Ocupacional", 0)
 
@@ -210,11 +194,11 @@ if st.button("📌 Calcular Ratio"):
     # 6) Información adicional
     st.subheader("ℹ️ Información sobre las ratios")
     st.write("- **Atención Directa**: Se requiere un mínimo de 0,47 (EJC) por residente.")
-    st.write("- **Servicio médico**: Presencia física diaria de lunes a viernes y fines de semana localizable.")
-    st.write("- **Enfermería**: Presencia física continuada todos los días del año.")
     st.write("- **Gerocultores**: Mínimo de 0,33 (EJC) por residente.")
     st.write("- **Fisioterapeuta y Terapeuta Ocupacional**: 4 horas/día (20h/sem) para 1-50 plazas. "
              "Por cada 25 plazas más (o fracción), +2h/día (10h/sem).")
+    st.write("- **Servicio médico**: Presencia física diaria de lunes a viernes y fines de semana localizable.")
+    st.write("- **Enfermería**: Presencia física todos los días del año, garantizando continuidad.")
     st.write("- **Psicólogo/a y Animador Sociocultural**: Servicios opcionales.")
-    st.write("- **Trabajador Social**: Contratación obligatoria (sin horas mínimas fijas).")
+    st.write("- **Trabajador Social**: Contratación obligatoria, sin horas mínimas específicas.")
     st.write("- **Atención No Directa**: Mínimo de 0,15 (EJC) por residente.")
